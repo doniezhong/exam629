@@ -105,6 +105,7 @@ def get_exam_list(request):
             'id': exam.id,
             'site': exam.site,
             'name': exam.name,
+            'type_display': '运维开发工程师' if  exam.type=='kf' else '运维自动化工程师',
             'type': exam.type,
             'exam_time': datetime_to_str(exam.exam_time),
             'status': '未开始' if exam.exam_time > now_time() else '已结束',
