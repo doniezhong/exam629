@@ -2,7 +2,129 @@
 
 <%block name="content">
 <div id="app" class="app" v-cloak>
+    <div>
+        <label>考试名称</label>
+        <i-input v-model="search_obj.name" style="width: 200px"></i-input>
+        <label>考试地点</label>
+        <i-input v-model="search_obj.site" style="width: 200px"></i-input>
+        <label>考试类型</label>
+        <i-select v-model="search_obj.type" style="width: 200px">
+            <i-option value="kf">运维开发工程师</i-option>
+            <i-option value="yw">运维自动化工程师</i-option>
+        </i-select>
+        <label>考试负责人</label>
+        <i-select v-model="search_obj.admin" style="width: 200px">
+            <i-option v-for="user in bk_user_list"
+                      :value="user.bk_biz_maintainer">{{ user.bk_biz_maintainer }}</i-option>
+        </i-select>
+        <i-button type="primary" @click="get_list">查询</i-button>
+        <i-button type="success" @click="modal1=true">新增</i-button>
+    </div>
 
+    <div style="margin-top: 20px">
+        <i-table border :columns="t_columns" :data="t_data">
+            <div slot-scope="{ row, index }" slot="action">
+                <i-button type="primary" size="small" style="margin-right: 5px" @click="edit(row)">详情</i-button>
+                <i-button type="error" size="small" @click="remove(row)">删除</i-button>
+            </div>
+        </i-table>
+
+        <Page style="margin-top: 20px; float: right;" :total="page.count" :current="page.current"/>
+    </div>
+
+    <Modal v-model="modal1" title="新增">
+        <i-form :model="exam_obj" :label-width="80">
+            <form-item label="关联业务">
+                <i-select v-model="exam_obj.bk_biz_id">
+                    <i-option v-for="biz in bk_biz_list" :value="biz.bk_biz_id">{{ biz.bk_biz_name }}</i-option>
+                </i-select>
+            </form-item>
+            <form-item label="考试名称">
+                <i-input v-model="exam_obj.name" placeholder=""></i-input>
+            </form-item>
+            <form-item label="考试类型">
+                <i-select v-model="exam_obj.type">
+                    <i-option value="kf">运维开发工程师</i-option>
+                    <i-option value="yw">运维自动化工程师</i-option>
+                </i-select>
+            </form-item>
+            <form-item label="考试负责人">
+                <i-select v-model="exam_obj.admin">
+                    <i-option v-for="user in bk_user_list"
+                              :value="user.bk_biz_maintainer">{{ user.bk_biz_maintainer }}</i-option>
+                </i-select>
+            </form-item>
+            <form-item label="负责人联系方式">
+                <i-input v-model="exam_obj.phone" placeholder=""></i-input>
+            </form-item>
+            <form-item label="负责人联系方式">
+                <date-picker type="date" placeholder="Select date" format="yyyy-MM-dd"
+                             v-model="exam_obj.exam_time"></date-picker>
+            </form-item>
+            <form-item label="考试地点">
+                <i-input v-model="exam_obj.site" placeholder=""></i-input>
+            </form-item>
+            <form-item label="考试题目">
+                <Upload :before-upload="handleUpload" action="">
+                    <i-button icon="ios-cloud-upload-outline">点击上传</i-button>
+                </Upload>
+            </form-item>
+        </i-form>
+        <div slot="footer">
+            <i-button @click="modal_cancel">取消</i-button>
+            <i-button type="primary" @click="modal_ok">确定</i-button>
+        </div>
+    </Modal>
+
+    <Modal v-model="modal2" fullscreen title="详情">
+        <i-form :model="exam_obj" :label-width="80" inline>
+            <form-item label="关联业务">
+                <i-select v-model="exam_obj.bk_biz_id">
+                    <i-option v-for="biz in bk_biz_list" :value="biz.bk_biz_id">{{ biz.bk_biz_name }}</i-option>
+                </i-select>
+            </form-item>
+            <form-item label="考试名称">
+                <i-input v-model="exam_obj.name" placeholder=""></i-input>
+            </form-item>
+            <form-item label="考试类型">
+                <i-select v-model="exam_obj.type">
+                    <i-option value="kf">运维开发工程师</i-option>
+                    <i-option value="yw">运维自动化工程师</i-option>
+                </i-select>
+            </form-item>
+            <form-item label="考试负责人">
+                <i-select v-model="exam_obj.admin">
+                    <i-option v-for="user in bk_user_list"
+                              :value="user.bk_biz_maintainer">{{ user.bk_biz_maintainer }}</i-option>
+                </i-select>
+            </form-item>
+            <form-item label="负责人联系方式">
+                <i-input v-model="exam_obj.phone" placeholder=""></i-input>
+            </form-item>
+            <form-item label="负责人联系方式">
+                <date-picker type="date" placeholder="Select date" format="yyyy-MM-dd"
+                             v-model="exam_obj.exam_time"></date-picker>
+            </form-item>
+            <form-item label="考试地点">
+                <i-input v-model="exam_obj.site" placeholder=""></i-input>
+            </form-item>
+            <form-item label="试题下载">
+                <i-button type="primary" @click="download">下载试题</i-button>
+            </form-item>
+        </i-form>
+        <div>
+            <i-button type="success" @click="import_student">导入考生</i-button>
+        </div>
+        <div>
+            <div id="chart2_demo" style="height:500px;padding:10px;"></div>
+        </div>
+        <div>
+            <i-table border :columns="student_columns" :data="student_data"></i-table>
+        </div>
+        <div slot="footer">
+            <i-button @click="modal2_cancel">取消</i-button>
+        </div>
+    </Modal>
 </div>
 <style>
     [v-cloak] {
@@ -12,16 +134,278 @@
 </%block>
 <script src="${STATIC_URL}conf/conf.js"></script>
 <script>
-    new Vue({
+    vm = new Vue({
         el: '#app',
         data() {
-            return {}
+            return {
+                //业务
+                bk_biz_list: [],
+                selected_biz: '',
+                //搜索
+                search_obj: {},
+                //表格
+                t_columns: [
+                    {
+                        title: '业务',
+                        key: 'bk_biz_id',
+                    },
+                    {
+                        title: '考试名称',
+                        key: 'name',
+                    },
+                    {
+                        title: '考试类型',
+                        key: 'type',
+                    },
+                    {
+                        title: '考试时间',
+                        key: 'exam_time',
+                    },
+                    {
+                        title: '考试状态',
+                        key: 'status',
+                    },
+                    {
+                        title: '考试地点',
+                        key: 'site',
+                    },
+                    {
+                        title: '操作',
+                        slot: 'action',
+                        //width: 150,
+                        align: 'center'
+                    }
+                ],
+                t_data: [],
+                //模态框
+                modal1: false,
+                modal2: false,
+                exam_obj: {},
+                bk_user_list: [],
+                file: null,
+                page: {
+                    current: 1,
+                    count: 0,
+                    size: 10
+                },
+                student_columns: [
+                    {
+                        title: '考生',
+                        key: 'name',
+                    },
+                    {
+                        title: '部门',
+                        key: 'department',
+                    },
+                    {
+                        title: '得分',
+                        key: 'score',
+                    },
+                    {
+                        title: '结果',
+                        key: 'result',
+                    },
+                    {
+                        title: '备注',
+                        key: 'mark',
+                    },
+                ],
+                student_data: []
+            }
         },
-        watch: {
-        },
+        watch: {},
         mounted() {
+            this.get_list();
+            this.get_biz_list();
+            this.get_user_list();
         },
-        methods: {},
+        methods: {
+            handleUpload(file) {
+                this.exam_obj.content = file;
+                return false;
+            },
+            get_user_list() {
+                this.$http.post('bk_login/get_all_users').then(res => {
+                    if (res.result) {
+                        this.bk_user_list = res.data
+                    }
+                    else {
+                        this.$Message.error(res.message)
+                    }
+                })
+            },
+            get_biz_list() {
+                //获取业务id列表
+                this.$http.post('cc/search_business').then(res => {
+                    if (res.result) {
+                        this.bk_biz_list = res.data
+                    }
+                    else {
+                        this.$Message.error(res.message)
+                    }
+                })
+            },
+            get_page(res) {
+                this.count = res.data.length;
+                let start = (this.page.curren - 1) * this.page.size;
+                this.t_data = res.data.slice(start, start + this.page.size);
+            },
+            get_list() {
+                //查询
+                let search_params = {};
+                Object.keys(this.search_obj).forEach(function (key) {
+                    if (vm.search_obj[key]) {
+                        search_params[key] = vm.search_obj[key];
+                    }
+                });
+                this.$http.get('get_exam_list', {params: search_params}).then(res => {
+                    if (res.result) {
+                        this.page.curren = 1;
+                        this.get_page(res)
+                    }
+                    else {
+                        this.$Message.error(res.message)
+                    }
+                })
+            },
+            modal_cancel() {
+                //关闭模态框
+                this.modal1 = false;
+                this.exam_obj = {};
+            },
+            modal2_cancel() {
+                //关闭模态框
+                this.modal2 = false;
+                this.exam_obj = {};
+            },
+            modal_ok() {
+                //do_something
+                var formData = new FormData();
+                Object.keys(this.exam_obj).forEach(function (key) {
+                    if (vm.exam_obj[key]) {
+                        formData.append = (key, vm.exam_obj[key]);
+                    }
+                });
+                //let config = {
+                //    headers: {
+                //        'Content-Type': 'multipart/form-data'
+                //   }
+                //};
+
+                this.$http.post('add_exam', this.exam_obj).then(res => {
+                    if (res.result) {
+                        this.get_list();
+                        this.modal_cancel();
+                        this.$Message.success('增加成功');
+                    }
+                    else {
+                        this.$Message.error(res.message);
+                    }
+                });
+                this.modal_cancel()
+            },
+            modal2_ok() {
+                //do_something
+                this.modal_cancel()
+            },
+            edit(row) {
+                this.exam_obj = row;
+                this.modal2 = true;
+            },
+            remove(row) {
+                this.$Modal.confirm({
+                    title: '提示框',
+                    content: '<p>是否确认删除</p>',
+                    onOk: () => {
+                        this.$http.post('delete_exam', row).then(res => {
+                            if (res.result) {
+                                this.get_list();
+                                this.$Message.success('删除成功')
+                            }
+                            else {
+                                this.$Message.error(res.message)
+                            }
+                        })
+                    },
+                    onCancel: () => {
+                    }
+                });
+            },
+            download(row) {
+                window.open('/download')
+            },
+            test() {
+                this.$http.get('api_test').then(res => {
+
+                })
+            },
+            createEBarChart(conf) {
+                var myChart = echarts.init(document.getElementById(conf.selector));
+                var legendData = [];//存放变量的name
+                for (var i = 0; i < conf.data.series.length; i++) {
+                    legendData.push(conf.data.series[i].name);
+                }
+                myChart.setOption({
+                    legend: {
+                        y: 'bottom',
+                        data: legendData
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            mark: {show: true},
+                            dataView: {show: true, readOnly: false},
+                            magicType: {show: true, type: ['line', 'bar']},
+                            restore: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    calculable: true,
+                    yAxis: [
+                        {
+                            type: 'value',
+                            splitArea: {show: true}
+                        }
+                    ],
+                    xAxis: conf.data.xAxis,
+                    series: conf.data.series
+                })
+            },
+            initEBarChart() {
+                $.ajax({
+                    url: '/student_import',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (res) {
+                        //获取数据成功
+                        if (res.result) {
+                            vm.createEBarChart({
+                                selector: 'chart2_demo', // 图表容器
+                                data: res.data, // 图表数据
+                            });
+                        }
+                    }
+                })
+            },
+            import_student() {
+                this.$http.get('student_import').then(res => {
+                    if (res.result) {
+                        this.student_data = res.data.table_data;
+                        let chra_data = {};
+                        this.createEBarChart({
+                            selector: 'chart2_demo', // 图表容器
+                            data: res.data.chart_data, // 图表数据
+                        });
+                    }
+                    else {
+                        this.$Message.error(res.message)
+                    }
+                })
+            }
+        },
     })
 </script>
 <style>
