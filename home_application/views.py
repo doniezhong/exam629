@@ -12,7 +12,7 @@ from common.mymako import render_mako_context
 from blueking.component.shortcuts import get_client_by_request
 from home_application.api_manager import JobApiManager
 from home_application.models import Exam
-from home_application.utils import now_time, now_time_str, utc_to_datetime, datetime_to_str
+from home_application.utils import now_time, now_time_str, utc_to_datetime, datetime_to_str, str_to_datetime, time_loads
 from utilities.response import *
 from conf.default import APP_ID, APP_TOKEN
 from utilities.error import try_exception
@@ -90,15 +90,18 @@ def get_all_users(request):
 
 
 def add_exam(request):
-    params = json.loads(request.body)
-    params['exam_time'] = utc_to_datetime(params['exam_time'])
+    file_obj = request.FILES['content']
+    params = request.POST.dict()
+    params['exam_time'] = time_loads(params['exam_time'])
+    params['file_data'] = file_obj
     obj = Exam.objects.create(**params)
     return success_result()
 
 
 def get_exam_list(request):
     params = request.GET
-    exam_list = Exam.objects.filter(**params)
+
+    exam_list = Exam.objects.filter(**params.dict())
     result_data = []
     for exam in exam_list:
         result_data.append({

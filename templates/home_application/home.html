@@ -280,10 +280,11 @@
             },
             modal_ok() {
                 //do_something
-                var formData = new FormData();
+                let formData = new FormData();
+                this.exam_obj.exam_time = this.exam_obj.exam_time.toJSON();
                 Object.keys(this.exam_obj).forEach(function (key) {
                     if (vm.exam_obj[key]) {
-                        formData.append = (key, vm.exam_obj[key]);
+                        formData.append(key, vm.exam_obj[key]);
                     }
                 });
                 //let config = {
@@ -292,7 +293,7 @@
                 //   }
                 //};
 
-                this.$http.post('add_exam', this.exam_obj).then(res => {
+                this.$http.post('add_exam', formData).then(res => {
                     if (res.result) {
                         this.get_list();
                         this.modal_cancel();

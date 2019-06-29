@@ -26,6 +26,7 @@ class Exam(BaseOperateModel):
     exam_time = models.DateTimeField()
     site = models.CharField(max_length=20)
     content = models.FileField(upload_to='/uploads')
+    file_data = models.BinaryField()
 
 
 class Student(BaseOperateModel):
